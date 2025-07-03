@@ -42,6 +42,6 @@ export default () => ({
     fallbackLocale: process.env.FALLBACK_LOCALE || 'en',
     supportedLocales: process.env.SUPPORTED_LOCALES
       ? process.env.SUPPORTED_LOCALES.split(',')
-      : ['en', 'ar'],
+      : ['en', 'ar', 'de'],
   },
 });

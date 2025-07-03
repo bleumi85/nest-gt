@@ -1,4 +1,4 @@
-![build status](https://github.com/v-checha/nestjs-template/actions/workflows/main.yml/badge.svg)
+[![CI/CD Pipeline](https://github.com/bleumi85/nest-gt/actions/workflows/main.yml/badge.svg)](https://github.com/bleumi85/nest-gt/actions/workflows/main.yml)
 
 # NestJS Template Documentation
 

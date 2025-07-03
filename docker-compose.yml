@@ -2,15 +2,15 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:14-alpine
-    container_name: nestjs-template-postgres
+    image: postgres:16
+    container_name: nest-gt-postgres
     restart: always
     ports:
       - '5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: nestjs_template
+      POSTGRES_DB: nestjs_graftipp
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -18,7 +18,7 @@ services:
 
   mailhog:
     image: mailhog/mailhog
-    container_name: nestjs-template-mailhog
+    container_name: nest-gt-mailhog
     restart: always
     ports:
       - '1025:1025' # SMTP server
@@ -28,7 +28,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: nestjs-template-minio
+    container_name: nest-gt-minio
     restart: always
     ports:
       - '9000:9000'
@@ -44,7 +44,7 @@ services:
 
   createbuckets:
     image: minio/mc
-    container_name: nestjs-template-createbuckets
+    container_name: nest-gt-createbuckets
     depends_on:
       - minio
     entrypoint: >
@@ -64,7 +64,7 @@ services:
   #   build:
   #     context: .
   #     dockerfile: Dockerfile
-  #   container_name: nestjs-template-api
+  #   container_name: nest-gt-api
   #   restart: always
   #   ports:
   #     - "3000:3000"
