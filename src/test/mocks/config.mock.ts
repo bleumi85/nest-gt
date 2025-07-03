@@ -10,7 +10,7 @@ export const mockConfigService = {
       NODE_ENV: 'test',
 
       // Auth configuration
-      JWT_SECRET: 'test-jwt-secret',
+      JWT_ACCESS_SECRET: 'test-jwt-secret',
       JWT_EXPIRATION: '1h',
       REFRESH_TOKEN_EXPIRATION: '7d',
 

@@ -46,7 +46,7 @@ const mockJwtService = {
 const mockConfigService = {
   get: jest.fn((key: string) => {
     const config: Record<string, string> = {
-      JWT_SECRET: 'test-jwt-secret',
+      JWT_ACCESS_SECRET: 'test-jwt-secret',
       JWT_ACCESS_EXPIRATION: '15m',
     };
 

@@ -24,6 +24,7 @@
     "i18n"
   ],
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -77,7 +78,8 @@
     "reflect-metadata": "^0.2.2",
     "speakeasy": "^2.0.0",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.25.71"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.5",

@@ -199,7 +199,7 @@ export class HealthService {
   }
 
   private async checkConfiguration(): Promise<void> {
-    const requiredVars = ['JWT_SECRET', 'DATABASE_URL'];
+    const requiredVars = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'DATABASE_URL'];
     const missing = requiredVars.filter(key => !this.configService.get(key));
 
     if (missing.length > 0) {

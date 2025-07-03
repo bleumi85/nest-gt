@@ -25,6 +25,17 @@ import { JwtAuthGuard } from '@presentation/guards/jwt-auth.guard';
 
 // Config
 import configuration from '@infrastructure/config/configuration';
+import { z } from 'zod';
+
+const envSchema = z.object({
+  // Database
+  DATABASE_URL: z.string().url(),
+  // JWT
+  JWT_ACCESS_SECRET: z.string(),
+  JWT_ACCESS_EXPIRATION: z.string(),
+  JWT_REFRESH_SECRET: z.string(),
+  JWT_REFRESH_EXPIRATION: z.string(),
+});
 
 @Module({
   imports: [
@@ -33,6 +44,7 @@ import configuration from '@infrastructure/config/configuration';
       isGlobal: true,
       envFilePath: '.env',
       load: [configuration],
+      validate: env => envSchema.parse(env),
     }),
 
     // Logging

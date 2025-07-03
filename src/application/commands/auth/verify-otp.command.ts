@@ -51,7 +51,7 @@ export class VerifyOtpCommandHandler implements ICommandHandler<VerifyOtpCommand
     };
 
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get('JWT_SECRET'),
+      secret: this.configService.get('JWT_ACCESS_SECRET'),
       expiresIn: this.configService.get('JWT_ACCESS_EXPIRATION'),
     });
 

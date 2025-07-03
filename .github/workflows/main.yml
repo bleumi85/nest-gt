@@ -126,7 +126,8 @@ jobs:
         run: npm run test:e2e
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nestjs_template_test
-          JWT_SECRET: test-secret-key-for-ci-testing-only
+          JWT_ACCESS_SECRET: test-secret-key-for-ci-testing-only
+          JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci-testing-only
           OTP_SECRET: test-otp-secret-for-ci-testing-only
 
   security:
@@ -149,7 +150,7 @@ jobs:
         run: npm audit --audit-level=high
 
       - name: Run CodeQL Analysis
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: typescript
 

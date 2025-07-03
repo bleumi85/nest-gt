@@ -49,9 +49,10 @@ The application uses environment variables for configuration. These should be se
 | `NODE_ENV` | Environment name | `development`, `staging`, `production` |
 | `PORT` | Port for the application | `3000` |
 | `DATABASE_URL` | Database connection string | `postgresql://user:password@localhost:5432/dbname` |
-| `JWT_SECRET` | Secret for JWT signing | `your-secret-key` |
-| `JWT_EXPIRATION` | JWT expiration time | `15m` |
-| `REFRESH_TOKEN_EXPIRATION` | Refresh token expiration | `7d` |
+| `JWT_ACCESS_SECRET` | Secret for JWT access signing | `your-secret-key` |
+| `JWT_ACCESS_EXPIRATION` | Access token expiration | `15m` |
+| `JWT_REFRESH_SECRET` | Secret for JWT refresh signing | `another-secret-key` |
+| `JWT_REFRESH_EXPIRATION` | Refresh token expiration | `7d` |
 | `EMAIL_HOST` | SMTP host for email | `smtp.example.com` |
 | `EMAIL_PORT` | SMTP port | `587` |
 | `EMAIL_USER` | SMTP username | `user@example.com` |
