@@ -1,18 +1,18 @@
 import {
-  Controller,
-  Get,
-  Param,
-  Post,
   Body,
-  Put,
+  Controller,
   Delete,
-  Patch,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
-import { QueryBus, CommandBus } from '@nestjs/cqrs';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 // Guards & Decorators
 import { RolesGuard } from '@presentation/guards/roles.guard';
@@ -60,6 +60,14 @@ export class UserController {
     return this.queryBus.execute(new GetUsersQuery());
   }
 
+  @Get('/profile')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Returns user information' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
+  async getCurrentUserProfile(@CurrentUser() user: IJwtPayload) {
+    return this.queryBus.execute(new GetUserQuery(user.sub));
+  }
+
   @Get(':id')
   @Roles(RolesEnum.ADMIN)
   @HttpCode(HttpStatus.OK)
@@ -84,6 +92,25 @@ export class UserController {
     return { message: 'User created successfully' };
   }
 
+  @Put('/profile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Profile updated successfully' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input data' })
+  async updateCurrentUserProfile(
+    @CurrentUser() user: IJwtPayload,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.commandBus.execute(
+      new UpdateUserCommand(
+        user.sub,
+        updateUserDto.firstName,
+        updateUserDto.lastName,
+        updateUserDto.email,
+      ),
+    );
+  }
+
   @Put(':id')
   @Roles(RolesEnum.ADMIN)
   @HttpCode(HttpStatus.OK)
@@ -97,25 +124,6 @@ export class UserController {
     return this.commandBus.execute(
       new UpdateUserCommand(
         id,
-        updateUserDto.firstName,
-        updateUserDto.lastName,
-        updateUserDto.email,
-      ),
-    );
-  }
-
-  @Put('/profile')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update current user profile' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Profile updated successfully' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input data' })
-  async updateCurrentUserProfile(
-    @CurrentUser() user: IJwtPayload,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    return this.commandBus.execute(
-      new UpdateUserCommand(
-        user.sub,
         updateUserDto.firstName,
         updateUserDto.lastName,
         updateUserDto.email,

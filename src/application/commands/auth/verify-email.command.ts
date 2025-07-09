@@ -1,4 +1,4 @@
-import { ICommand, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { VerifyEmailDto } from '@application/dtos/auth/email-verification.dto';
 import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -7,12 +7,24 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuthService } from '@core/services/auth.service';
 import { IUserRepository } from '@core/repositories/user.repository.interface';
 import { IRoleRepository } from '@core/repositories/role.repository.interface';
-import { IAuthTokenResponse } from '@application/dtos/responses/user.response';
+import {
+  IAuthTokenResponse,
+  IJwtPayload,
+  IJwtRefreshPayload,
+} from '@application/dtos/responses/user.response';
 import { UserMapper } from '@application/mappers/user.mapper';
 import { USER_REPOSITORY, ROLE_REPOSITORY } from '@shared/constants/tokens';
+import { VersionsEnum } from '@shared/constants/versions';
+import ms from 'enhanced-ms';
+import { UnknownVersionException } from '@core/exceptions/domain-exceptions';
 
-export class VerifyEmailCommand implements ICommand {
-  constructor(public readonly dto: VerifyEmailDto) {}
+export class VerifyEmailCommand extends Command<IAuthTokenResponse | { verified: boolean }> {
+  constructor(
+    public readonly verifyEmailDto: VerifyEmailDto,
+    public readonly version: VersionsEnum,
+  ) {
+    super();
+  }
 }
 
 @Injectable()
@@ -31,7 +43,10 @@ export class VerifyEmailCommandHandler
   ) {}
 
   async execute(command: VerifyEmailCommand): Promise<IAuthTokenResponse | { verified: boolean }> {
-    const { email, code } = command.dto;
+    const {
+      verifyEmailDto: { email, code },
+      version,
+    } = command;
 
     // Verify the email code
     const verified = await this.authService.verifyEmailCode(email, code);
@@ -62,7 +77,7 @@ export class VerifyEmailCommandHandler
     }
 
     // 4. Generate JWT tokens
-    const payload = {
+    const accessPayload: IJwtPayload = {
       sub: user.id.getValue(),
       email: user.email.getValue(),
       emailVerified: true,
@@ -70,19 +85,39 @@ export class VerifyEmailCommandHandler
       permissions: Array.from(userPermissions),
     };
 
-    const accessToken = this.jwtService.sign(payload, {
+    const accessToken = this.jwtService.sign(accessPayload, {
       secret: this.configService.get('JWT_ACCESS_SECRET'),
       expiresIn: this.configService.get('JWT_ACCESS_EXPIRATION'),
     });
 
-    const refreshToken = uuidv4();
-    await this.authService.createRefreshToken(user.id.getValue(), refreshToken);
+    const refreshExpiresIn = this.configService.get<string>('JWT_REFRESH_EXPIRATION');
+    const expirationRefreshMs = ms(refreshExpiresIn);
+    const refreshTokenUuid = uuidv4();
+    await this.authService.createRefreshToken(user.id.getValue(), refreshTokenUuid);
+    const refreshPayload: IJwtRefreshPayload = {
+      sub: user.id.getValue(),
+      refreshToken: refreshTokenUuid,
+    };
+    const refreshToken = this.jwtService.sign(refreshPayload, {
+      secret: this.configService.get('JWT_REFRESH_SECRET'),
+      expiresIn: refreshExpiresIn,
+    });
+    const refreshTokenCookie = `Refresh=${refreshToken}; Max-Age=${expirationRefreshMs / 1000}; Path=/; HttpOnly; Secure; SameSite=Strict`;
 
     // 5. Return tokens and user information
-    return {
-      accessToken,
-      refreshToken,
-      user: UserMapper.toAuthResponse(user, true),
-    };
+    if (version === VersionsEnum.V1) {
+      return {
+        accessToken,
+        refreshToken: refreshTokenUuid,
+        user: UserMapper.toAuthResponse(user, true),
+      };
+    } else if (version === VersionsEnum.V2) {
+      return {
+        accessToken,
+        refreshToken: refreshTokenCookie,
+        user: UserMapper.toAuthResponse(user, true),
+      };
+    }
+    throw new UnknownVersionException(version);
   }
 }

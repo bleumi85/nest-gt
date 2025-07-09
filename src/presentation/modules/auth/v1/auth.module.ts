@@ -15,7 +15,7 @@ import {
 } from '@shared/constants/tokens';
 
 // Controllers
-import { AuthController } from './auth.controller';
+import { AuthV1Controller } from './auth.controller';
 
 // Repositories
 import { UserRepository } from '@infrastructure/repositories/user.repository';
@@ -24,8 +24,8 @@ import { OtpRepository } from '@infrastructure/repositories/otp.repository';
 import { RefreshTokenRepository } from '@infrastructure/repositories/refresh-token.repository';
 import { EmailVerificationRepository } from '@infrastructure/repositories/email-verification.repository';
 import { PasswordResetRepository } from '@infrastructure/repositories/password-reset.repository';
-import { EmailProvider } from './providers/email.provider';
-import { TokenProvider } from './providers/token.provider';
+import { EmailProvider } from '../providers/email.provider';
+import { TokenProvider } from '../providers/token.provider';
 
 // Services
 import { UserService } from '@core/services/user.service';
@@ -47,7 +47,7 @@ import { RequestPasswordResetCommandHandler } from '@application/commands/auth/r
 import { ResetPasswordCommandHandler } from '@application/commands/auth/reset-password.command';
 
 // Strategies
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtStrategy } from '../strategies/jwt.strategy';
 
 const commandHandlers = [
   RegisterUserCommandHandler,
@@ -80,7 +80,7 @@ const commandHandlers = [
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthV1Controller],
   providers: [
     // Services
     UserService,
@@ -124,4 +124,4 @@ const commandHandlers = [
   ],
   exports: [UserService, AuthService],
 })
-export class AuthModule {}
+export class AuthV1Module {}

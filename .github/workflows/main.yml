@@ -127,7 +127,9 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nestjs_template_test
           JWT_ACCESS_SECRET: test-secret-key-for-ci-testing-only
+          JWT_ACCESS_EXPIRATION: 15m
           JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci-testing-only
+          JWT_REFRESH_EXPIRATION: 7d
           OTP_SECRET: test-otp-secret-for-ci-testing-only
 
   security:

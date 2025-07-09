@@ -1,6 +1,6 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 // DTOs
 import { RegisterDto } from '@application/dtos/auth/register.dto';
@@ -33,11 +33,12 @@ import { Public } from '@shared/decorators/public.decorator';
 import { CurrentUser } from '@shared/decorators/current-user.decorator';
 import { SkipThrottle, Throttle } from '@shared/decorators/throttle.decorator';
 import { IJwtPayload } from '@application/dtos/responses/user.response';
+import { VersionsEnum } from '@shared/constants/versions';
 
 @ApiTags('auth')
 @Throttle(60, 5) // 5 requests per minute
-@Controller('auth')
-export class AuthController {
+@Controller({ path: 'auth', version: '1' })
+export class AuthV1Controller {
   constructor(private readonly commandBus: CommandBus) {}
 
   @Public()
@@ -62,7 +63,7 @@ export class AuthController {
   })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
-    return this.commandBus.execute(new LoginCommand(loginDto));
+    return this.commandBus.execute(new LoginCommand(loginDto, VersionsEnum.V1));
   }
 
   @Public()
@@ -97,7 +98,7 @@ export class AuthController {
   })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Invalid refresh token' })
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.commandBus.execute(new RefreshTokenCommand(refreshTokenDto));
+    return this.commandBus.execute(new RefreshTokenCommand(refreshTokenDto, VersionsEnum.V1));
   }
 
   @Post('logout')
@@ -153,7 +154,7 @@ export class AuthController {
     description: 'Invalid or expired verification code',
   })
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
-    return this.commandBus.execute(new VerifyEmailCommand(verifyEmailDto));
+    return this.commandBus.execute(new VerifyEmailCommand(verifyEmailDto, VersionsEnum.V1));
   }
 
   @Public()

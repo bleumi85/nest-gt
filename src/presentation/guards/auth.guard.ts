@@ -24,6 +24,9 @@ export class AuthGuard implements CanActivate {
       context.getClass(),
     ]);
 
+    console.log('Route:', context.getHandler());
+    console.log('Required Roles:', requiredRoles);
+
     // If no role or permission requirements, allow access
     if (!requiredRoles && !requiredPermissions) {
       return true;
@@ -31,6 +34,8 @@ export class AuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+
+    console.log('UserRoles:', user?.roles);
 
     if (!user) {
       throw new UnauthorizedException('User not authenticated');

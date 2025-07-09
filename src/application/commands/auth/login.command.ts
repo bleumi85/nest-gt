@@ -1,4 +1,4 @@
-import { ICommand, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { LoginDto } from '@application/dtos/auth/login.dto';
 import { AuthResponse } from '@application/dtos/responses/user.response';
 import { UnauthorizedException, Injectable, Inject } from '@nestjs/common';
@@ -10,9 +10,15 @@ import { UserMapper } from '@application/mappers/user.mapper';
 import { I18nService } from 'nestjs-i18n';
 import { ROLE_REPOSITORY } from '@shared/constants/tokens';
 import { LoggerService } from '@infrastructure/logger/logger.service';
+import { VersionsEnum } from '@shared/constants/versions';
 
-export class LoginCommand implements ICommand {
-  constructor(public readonly loginDto: LoginDto) {}
+export class LoginCommand extends Command<AuthResponse> {
+  constructor(
+    public readonly loginDto: LoginDto,
+    public readonly version: VersionsEnum,
+  ) {
+    super();
+  }
 }
 
 @Injectable()
@@ -31,7 +37,10 @@ export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
   }
 
   async execute(command: LoginCommand): Promise<AuthResponse> {
-    const { email } = command.loginDto;
+    const {
+      loginDto: { email },
+      version,
+    } = command;
 
     this.logger.log({ message: 'Login attempt', email });
 
@@ -108,6 +117,7 @@ export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
       user,
       Array.from(userPermissions),
       true, // Email is verified at this point
+      version,
     );
 
     this.logger.log({

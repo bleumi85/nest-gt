@@ -1,12 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AllExceptionsFilter } from '@presentation/filters/all-exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as basicAuth from 'express-basic-auth';
 import helmet from 'helmet';
 import { LoggerService } from '@infrastructure/logger/logger.service';
+import * as cookieParser from 'cookie-parser';
+
+// Modules
+import * as Modules from '@presentation/modules';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,6 +42,9 @@ async function bootstrap() {
     }),
   );
 
+  // Cookie Parser
+  app.use(cookieParser());
+
   // Global exception filter
   const exceptionLogger = await app.resolve(LoggerService);
   app.useGlobalFilters(new AllExceptionsFilter(exceptionLogger));
@@ -56,12 +63,15 @@ async function bootstrap() {
   // API prefix
   app.setGlobalPrefix('api');
 
+  // Versioning
+  app.enableVersioning({ type: VersioningType.URI });
+
   // Get i18n service to use in Swagger
   const i18nService = app.get(ConfigService).get('i18n');
   const supportedLanguages = i18nService?.supportedLocales || ['en', 'ar'];
 
   // Swagger setup
-  const config = new DocumentBuilder()
+  const configV1 = new DocumentBuilder()
     .setTitle('NestJS Clean Architecture API')
     .setDescription('The API documentation for the NestJS Clean Architecture template')
     .setVersion('1.0')
@@ -110,9 +120,19 @@ async function bootstrap() {
     );
   }
 
-  const document = SwaggerModule.createDocument(app, config);
+  const documentV1 = SwaggerModule.createDocument(app, configV1, {
+    include: [
+      Modules.AdminModule,
+      Modules.AuthV1Module,
+      Modules.HealthModule,
+      Modules.RoleModule,
+      Modules.StorageModule,
+      Modules.UserModule,
+    ],
+  });
 
-  SwaggerModule.setup('docs', app, document, {
+  SwaggerModule.setup('docs', app, documentV1, {
+    explorer: true,
     swaggerOptions: {
       persistAuthorization: true,
       displayRequestDuration: true,
@@ -120,8 +140,57 @@ async function bootstrap() {
       filter: true,
       showRequestHeaders: true,
       tryItOutEnabled: true,
+      urls: [
+        {
+          name: 'Api V1',
+          url: 'docs/v1/swagger.json',
+        },
+        {
+          name: 'Api V2',
+          url: 'docs/v2/swagger.json',
+        },
+      ],
     },
     customSiteTitle: 'NestJS Clean Architecture API',
+    jsonDocumentUrl: '/docs/v1/swagger.json',
+  });
+
+  const configV2 = new DocumentBuilder()
+    .setTitle('NestJS Clean Architecture API')
+    .setDescription('The API documentation for the NestJS Clean Architecture template')
+    .setVersion('2.0')
+    .addTag('auth', 'Authentication endpoints')
+    .addGlobalParameters({
+      name: 'Accept-Language',
+      in: 'header',
+      required: false,
+      schema: {
+        type: 'string',
+        default: 'en',
+        enum: supportedLanguages,
+        example: 'en',
+        description: 'Language preference for the response',
+      },
+    })
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth', // This is a key to be used in @ApiBearerAuth() decorator
+    )
+    .build();
+
+  const documentV2 = SwaggerModule.createDocument(app, configV2, {
+    include: [Modules.AuthV2Module],
+  });
+
+  SwaggerModule.setup('docs/v2', app, documentV2, {
+    jsonDocumentUrl: '/docs/v2/swagger.json',
   });
 
   // Start server

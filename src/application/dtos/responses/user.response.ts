@@ -32,6 +32,16 @@ export interface IAuthTokenResponse {
   user: IUserWithAuthResponse;
 }
 
+export function isIAuthTokenResponse(response: AuthResponse): response is IAuthTokenResponse {
+  return (
+    typeof response === 'object' &&
+    response !== null &&
+    'accessToken' in response &&
+    'refreshToken' in response &&
+    'user' in response
+  );
+}
+
 export interface IOtpRequiredResponse {
   requiresOtp: true;
   userId: string;
@@ -56,6 +66,13 @@ export interface IJwtPayload {
   emailVerified?: boolean;
   roles: string[];
   permissions?: string[];
+  iat?: number;
+  exp?: number;
+}
+
+export interface IJwtRefreshPayload {
+  sub: string;
+  refreshToken: string;
   iat?: number;
   exp?: number;
 }

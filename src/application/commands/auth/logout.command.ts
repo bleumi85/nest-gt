@@ -1,9 +1,11 @@
-import { ICommand, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Injectable } from '@nestjs/common';
 import { AuthService } from '@core/services/auth.service';
 
-export class LogoutCommand implements ICommand {
-  constructor(public readonly userId: string) {}
+export class LogoutCommand extends Command<{ message: string }> {
+  constructor(public readonly userId: string) {
+    super();
+  }
 }
 
 @Injectable()

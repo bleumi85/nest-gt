@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { VersionsEnum } from '@shared/constants/versions';
 
 // Base domain exception class
 export class DomainException extends HttpException {
@@ -82,8 +83,11 @@ export class InvalidThrottleIdentifierException extends DomainException {
 
 // Domain-specific exception hierarchies
 export abstract class UserDomainException extends DomainException {}
+
 export abstract class RoleDomainException extends DomainException {}
+
 export abstract class AuthenticationDomainException extends DomainException {}
+
 export abstract class FileDomainException extends DomainException {}
 
 // User domain exceptions
@@ -198,5 +202,12 @@ export class ConfigurationException extends HealthCheckException {
   constructor(message: string) {
     super(`Configuration error: ${message}`);
     this.name = 'ConfigurationException';
+  }
+}
+
+export class UnknownVersionException extends DomainException {
+  constructor(version: VersionsEnum) {
+    super(`Unknown version: ${version}`, HttpStatus.BAD_REQUEST);
+    this.name = 'UnknownVersionException';
   }
 }
