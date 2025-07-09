@@ -11,10 +11,11 @@ import { Email } from '@core/value-objects/email.vo';
 import { FirstName, LastName } from '@core/value-objects/name.vo';
 import { Role } from '@core/entities/role.entity';
 import { Permission } from '@core/entities/permission.entity';
-import { ResourceAction, ActionType } from '@core/value-objects/resource-action.vo';
+import { ActionType, ResourceAction } from '@core/value-objects/resource-action.vo';
 import { I18nService } from 'nestjs-i18n';
 import { LoggerService } from '@infrastructure/logger/logger.service';
 import { ROLE_REPOSITORY } from '@shared/constants/tokens';
+import { VersionsEnum } from '@shared/constants/versions';
 
 // Mock dependencies
 const mockUserService = {
@@ -155,10 +156,13 @@ describe('LoginCommandHandler', () => {
 
   it('should throw UnauthorizedException when credentials are invalid', async () => {
     // Arrange
-    const command = new LoginCommand({
-      email: 'test@example.com',
-      password: 'wrongPassword',
-    });
+    const command = new LoginCommand(
+      {
+        email: 'test@example.com',
+        password: 'wrongPassword',
+      },
+      VersionsEnum.V1,
+    );
 
     mockUserService.validateCredentials.mockResolvedValue(null);
 
@@ -172,10 +176,13 @@ describe('LoginCommandHandler', () => {
 
   it('should return email verification required response when email is not verified', async () => {
     // Arrange
-    const command = new LoginCommand({
-      email: 'test@example.com',
-      password: 'Password123!',
-    });
+    const command = new LoginCommand(
+      {
+        email: 'test@example.com',
+        password: 'Password123!',
+      },
+      VersionsEnum.V1,
+    );
 
     const user = createTestUser();
     mockUserService.validateCredentials.mockResolvedValue(user);
@@ -203,10 +210,13 @@ describe('LoginCommandHandler', () => {
 
   it('should return OTP required response when user has OTP enabled', async () => {
     // Arrange
-    const command = new LoginCommand({
-      email: 'test@example.com',
-      password: 'Password123!',
-    });
+    const command = new LoginCommand(
+      {
+        email: 'test@example.com',
+        password: 'Password123!',
+      },
+      VersionsEnum.V1,
+    );
 
     const user = createTestUser();
     user.enableTwoFactor('OTPSECRETBASE32');
@@ -235,10 +245,13 @@ describe('LoginCommandHandler', () => {
 
   it('should return auth tokens when login is successful', async () => {
     // Arrange
-    const command = new LoginCommand({
-      email: 'test@example.com',
-      password: 'Password123!',
-    });
+    const command = new LoginCommand(
+      {
+        email: 'test@example.com',
+        password: 'Password123!',
+      },
+      VersionsEnum.V1,
+    );
 
     const user = createTestUser();
     const roleWithPermissions = createRoleWithPermissions();
@@ -274,16 +287,19 @@ describe('LoginCommandHandler', () => {
     expect(authService.updateLastLogin).toHaveBeenCalledWith(user.id.getValue());
     expect(authService.isEmailVerified).toHaveBeenCalledWith('test@example.com');
     expect(roleRepository.findById).toHaveBeenCalledWith(user.roles[0].id.getValue());
-    expect(tokenProvider.generateTokens).toHaveBeenCalledWith(user, ['user:read'], true);
+    expect(tokenProvider.generateTokens).toHaveBeenCalledWith(user, ['user:read'], true, 'v1');
     expect(UserMapper.toAuthResponse).toHaveBeenCalledWith(user, true);
   });
 
   it('should collect permissions from all user roles', async () => {
     // Arrange
-    const command = new LoginCommand({
-      email: 'test@example.com',
-      password: 'Password123!',
-    });
+    const command = new LoginCommand(
+      {
+        email: 'test@example.com',
+        password: 'Password123!',
+      },
+      VersionsEnum.V1,
+    );
 
     const user = createTestUser();
 
@@ -353,6 +369,7 @@ describe('LoginCommandHandler', () => {
       user,
       expect.arrayContaining(['user:read', 'user:write']),
       true,
+      'v1',
     );
 
     // Also check that roleRepository.findById was called for both roles

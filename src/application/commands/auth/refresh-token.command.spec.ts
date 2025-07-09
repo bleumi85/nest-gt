@@ -15,8 +15,9 @@ import { UserId } from '@core/value-objects/user-id.vo';
 import { Token } from '@core/value-objects/token.vo';
 import { Role } from '@core/entities/role.entity';
 import { Permission } from '@core/entities/permission.entity';
-import { ResourceAction, ActionType } from '@core/value-objects/resource-action.vo';
-import { USER_REPOSITORY, ROLE_REPOSITORY } from '@shared/constants/tokens';
+import { ActionType, ResourceAction } from '@core/value-objects/resource-action.vo';
+import { ROLE_REPOSITORY, USER_REPOSITORY } from '@shared/constants/tokens';
+import { VersionsEnum } from '@shared/constants/versions';
 
 // Mock UUID generation
 jest.mock('uuid', () => ({
@@ -48,6 +49,8 @@ const mockConfigService = {
     const config: Record<string, string> = {
       JWT_ACCESS_SECRET: 'test-jwt-secret',
       JWT_ACCESS_EXPIRATION: '15m',
+      JWT_REFRESH_SECRET: 'test-refresh-secret',
+      JWT_REFRESH_EXPIRATION: '7d',
     };
 
     return config[key];
@@ -158,9 +161,12 @@ describe('RefreshTokenCommandHandler', () => {
 
   it('should refresh the token and return new tokens', async () => {
     // Arrange
-    const command = new RefreshTokenCommand({
-      refreshToken: '550e8400-e29b-41d4-a716-446655440005',
-    });
+    const command = new RefreshTokenCommand(
+      {
+        refreshToken: '550e8400-e29b-41d4-a716-446655440005',
+      },
+      VersionsEnum.V1,
+    );
 
     const user = createTestUser();
     const refreshToken = createValidRefreshToken();
@@ -212,9 +218,12 @@ describe('RefreshTokenCommandHandler', () => {
 
   it('should throw UnauthorizedException when refresh token is invalid', async () => {
     // Arrange
-    const command = new RefreshTokenCommand({
-      refreshToken: '550e8400-e29b-41d4-a716-446655440006', // Valid UUID format but not found in DB
-    });
+    const command = new RefreshTokenCommand(
+      {
+        refreshToken: '550e8400-e29b-41d4-a716-446655440006', // Valid UUID format but not found in DB
+      },
+      VersionsEnum.V1,
+    );
 
     // The token is invalid from the service perspective (not found)
     mockAuthService.validateRefreshToken.mockResolvedValue(null);
@@ -229,9 +238,12 @@ describe('RefreshTokenCommandHandler', () => {
 
   it('should throw UnauthorizedException when user not found', async () => {
     // Arrange
-    const command = new RefreshTokenCommand({
-      refreshToken: '550e8400-e29b-41d4-a716-446655440005',
-    });
+    const command = new RefreshTokenCommand(
+      {
+        refreshToken: '550e8400-e29b-41d4-a716-446655440005',
+      },
+      VersionsEnum.V1,
+    );
 
     const refreshToken = createValidRefreshToken();
 
@@ -249,9 +261,12 @@ describe('RefreshTokenCommandHandler', () => {
 
   it('should collect permissions from all user roles', async () => {
     // Arrange
-    const command = new RefreshTokenCommand({
-      refreshToken: '550e8400-e29b-41d4-a716-446655440005',
-    });
+    const command = new RefreshTokenCommand(
+      {
+        refreshToken: '550e8400-e29b-41d4-a716-446655440005',
+      },
+      VersionsEnum.V1,
+    );
 
     const user = createTestUser();
 
