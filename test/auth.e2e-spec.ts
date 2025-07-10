@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { JwtService } from '@nestjs/jwt';
@@ -35,6 +35,9 @@ describe('AuthController (e2e)', () => {
     // API prefix - needs to match main.ts setting
     app.setGlobalPrefix('api');
 
+    // Versioning
+    app.enableVersioning({ type: VersioningType.URI });
+
     // Get services
     jwtService = moduleFixture.get<JwtService>(JwtService);
 
@@ -53,12 +56,12 @@ describe('AuthController (e2e)', () => {
     await app.close();
   });
 
-  describe('GET /auth/me', () => {
+  describe('GET /v1/auth/me', () => {
     // This test might still fail without a database connection
     // We're marking it as pending for now since it needs actual user data
     it.skip('should get current user info with valid token', () => {
       return request(app.getHttpServer())
-        .get('/api/auth/me')
+        .get('/api/v1/auth/me')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200)
         .expect(res => {
@@ -70,20 +73,20 @@ describe('AuthController (e2e)', () => {
 
     it('should fail with invalid token', () => {
       return request(app.getHttpServer())
-        .get('/api/auth/me')
+        .get('/api/v1/auth/me')
         .set('Authorization', 'Bearer invalid-token')
         .expect(401);
     });
 
     it('should fail without token', () => {
-      return request(app.getHttpServer()).get('/api/auth/me').expect(401);
+      return request(app.getHttpServer()).get('/api/v1/auth/me').expect(401);
     });
   });
 
-  describe('POST /auth/register', () => {
+  describe('POST /v1/auth/register', () => {
     it('should validate registration input', () => {
       return request(app.getHttpServer())
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           email: 'not-an-email',
           password: 'short',
@@ -95,7 +98,7 @@ describe('AuthController (e2e)', () => {
 
     it.skip('should register a new user with valid input', () => {
       return request(app.getHttpServer())
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           email: 'test-user@example.com',
           password: 'StrongPassword123!',
@@ -110,10 +113,10 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('POST /auth/login', () => {
+  describe('POST /v1/auth/login', () => {
     it('should validate login input', () => {
       return request(app.getHttpServer())
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'not-an-email',
           password: '',
@@ -123,7 +126,7 @@ describe('AuthController (e2e)', () => {
 
     it.skip('should return tokens for valid credentials', () => {
       return request(app.getHttpServer())
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'test@example.com',
           password: 'Password123!',
@@ -137,36 +140,45 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('POST /auth/refresh-token', () => {
-    it('should validate refresh token input', () => {
+  describe('POST /v1/auth/refresh-token', () => {
+    it('should validate refresh token input (empty)', () => {
       return request(app.getHttpServer())
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({
           refreshToken: '',
         })
         .expect(400);
     });
 
-    it('should fail with invalid refresh token', () => {
+    it('should validate refresh token input (no uuid)', () => {
       return request(app.getHttpServer())
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({
           refreshToken: 'invalid-refresh-token',
+        })
+        .expect(400);
+    });
+
+    it('should validate invalid refresh token', () => {
+      return request(app.getHttpServer())
+        .post('/api/v1/auth/refresh-token')
+        .send({
+          refreshToken: '5ecf9b82-28bf-4600-966f-e65136bba762',
         })
         .expect(401);
     });
   });
 
-  describe('POST /auth/logout', () => {
+  describe('POST /v1/auth/logout', () => {
     it('should require authentication', () => {
-      return request(app.getHttpServer()).post('/api/auth/logout').expect(401);
+      return request(app.getHttpServer()).post('/api/v1/auth/logout').expect(401);
     });
   });
 
   describe('Public email endpoints', () => {
     it('should validate email format for verification request', () => {
       return request(app.getHttpServer())
-        .post('/api/auth/email/send-verification')
+        .post('/api/v1/auth/email/send-verification')
         .send({
           email: 'not-an-email',
         })
@@ -175,7 +187,7 @@ describe('AuthController (e2e)', () => {
 
     it('should validate verification code format', () => {
       return request(app.getHttpServer())
-        .post('/api/auth/email/verify')
+        .post('/api/v1/auth/email/verify')
         .send({
           email: 'test@example.com',
           code: '',

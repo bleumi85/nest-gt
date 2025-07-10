@@ -16,6 +16,7 @@ import { AdminModule } from '@presentation/modules/admin/admin.module';
 import { StorageModule } from '@presentation/modules/storage/storage.module';
 import { HealthModule } from '@presentation/modules/health/health.module';
 import { CoreModule } from '@core/core.module';
+import { PaymentModule } from '@presentation/modules/payment/payment.module';
 
 // Global providers
 import { LoggingInterceptor } from '@presentation/interceptors/logging.interceptor';
@@ -74,6 +75,7 @@ const envSchema = z.object({
     AdminModule,
     StorageModule,
     HealthModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [

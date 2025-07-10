@@ -79,6 +79,7 @@ async function bootstrap() {
     .addTag('users', 'User management endpoints')
     .addTag('roles', 'Role management endpoints')
     .addTag('admin', 'Admin endpoints')
+    .addTag('payments', 'Payment management endpoints')
     .addGlobalParameters({
       name: 'Accept-Language',
       in: 'header',
@@ -128,6 +129,7 @@ async function bootstrap() {
       Modules.RoleModule,
       Modules.StorageModule,
       Modules.UserModule,
+      Modules.PaymentModule,
     ],
   });
 

@@ -44,7 +44,9 @@
     "db:seed": "ts-node -r tsconfig-paths/register prisma/seed.ts",
     "db:drop": "docker exec -it nest-gt-postgres psql -U postgres -d postgres -c \"DROP DATABASE IF EXISTS nestjs_graftipp WITH (FORCE);\"",
     "db:create": "docker exec -it nest-gt-postgres psql -U postgres -d postgres -c \"CREATE DATABASE nestjs_graftipp;\"",
-    "db:reset": "npm run db:drop && npm run db:create && npm run db:migrate && npm run db:generate && npm run db:seed",
+    "db:copy": "docker cp backups/backup_graftipp.sql nest-gt-postgres:/backup_graftipp.sql",
+    "db:backup": "docker exec -it nest-gt-postgres psql -U postgres -d nestjs_graftipp -f backup_graftipp.sql",
+    "db:reset": "npm run db:drop && npm run db:create && npm run db:migrate && npm run db:generate && npm run db:copy && npm run db:backup",
     "prepare": "husky"
   },
   "dependencies": {
