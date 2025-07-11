@@ -8,6 +8,7 @@ import { PrismaModule } from '@infrastructure/database/prisma/prisma.module';
 import { ThrottlerModule } from '@infrastructure/throttler/throttler.module';
 import { I18nModule } from '@infrastructure/i18n/i18n.module';
 import { LoggerModule } from '@infrastructure/logger/logger.module';
+import { WinstonLoggerModule } from '@infrastructure/logger/winston-logger.module';
 import { AuthV1Module } from '@presentation/modules/auth/v1/auth.module';
 import { AuthV2Module } from '@presentation/modules/auth/v2/auth.module';
 import { UserModule } from '@presentation/modules/user/user.module';
@@ -51,6 +52,7 @@ const envSchema = z.object({
 
     // Logging
     LoggerModule,
+    WinstonLoggerModule,
 
     // Database
     PrismaModule,

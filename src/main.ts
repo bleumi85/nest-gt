@@ -7,6 +7,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as basicAuth from 'express-basic-auth';
 import helmet from 'helmet';
 import { LoggerService } from '@infrastructure/logger/logger.service';
+import { WinstonLoggerService } from '@infrastructure/logger/winston-logger.service';
 import * as cookieParser from 'cookie-parser';
 
 // Modules
@@ -15,7 +16,7 @@ import * as Modules from '@presentation/modules';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const logger = await app.resolve(LoggerService);
+  const logger = await app.resolve(WinstonLoggerService);
 
   logger.setContext('Application');
 

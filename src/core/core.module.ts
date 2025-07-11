@@ -5,6 +5,7 @@ import { UserAuthorizationService } from './services/user-authorization.service'
 import { ApplicationEventService } from './services/application-event.service';
 import { HealthService } from './services/health.service';
 import { LoggerModule } from '@infrastructure/logger/logger.module';
+import { WinstonLoggerModule } from '@infrastructure/logger/winston-logger.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '@infrastructure/database/prisma/prisma.module';
 
@@ -13,7 +14,7 @@ import { PrismaModule } from '@infrastructure/database/prisma/prisma.module';
  * Contains all domain services and DDD infrastructure
  */
 @Module({
-  imports: [LoggerModule, ConfigModule, PrismaModule],
+  imports: [LoggerModule, WinstonLoggerModule, ConfigModule, PrismaModule],
   providers: [
     DomainEventService,
     DomainValidationService,
